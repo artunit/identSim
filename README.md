@@ -1,5 +1,6 @@
 # identSim
-This is an experiment looking for duplicate 78 record labels using the approach suggested in
+This is an experiment to identify duplicate 78 record labels from the always impressive
+[Internet Archive](https://archive.org/) using the approach suggested in
 [this blog post](https://brewster.kahle.org/2022/10/02/pythonistas-up-for-quick-hack-to-test-deduping-78rpm-records-using-document-clustering/).
 I found it difficult to get workable OCR for many of the labels so I applied a few image
 preprocessing steps and then merged the HOCR results. The code explains this in some detail, but as per the 
@@ -51,4 +52,4 @@ score:  0.6166634
 ```
 Notice that the document for matching is distinct from the folder holding the rest of the OCR files. I suspect
 there could be refinements in the text of the OCR to improve the matching, for example, removing 
-branding text, e.g. Columbia, but this is meant to be more of a starting point than a definitive example.
+branding text, e.g. _Columbia_, but this is meant to be more of a starting point than a definitive example.
