@@ -25,7 +25,7 @@ test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_
 ```
 The second python script combines the HOCR results into one document and creates a text verion:
 ```
-python3 ../mergeHocr.py -f test100
+python mergeHocr.py -f test100
 ```
 The combined results are in two files with a "_odw" suffix:
 ```
