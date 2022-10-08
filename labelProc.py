@@ -1,24 +1,19 @@
 """
 labelProc.py - step through images with some variations
 
-This simple program applies 3 image preprocessing
-steps and runs Tesseract on the results of all of
+This simple program applies some image preprocessing
+steps and runs Tesseract on the results on all of
 them. The target images (78 record labels) have
 many different backgrounds, see:
 
 https://archive.org/details/georgeblood
 
-The image modifications are:
+The image modifications are set in OPTS and
+use scribo-cli, see:
 
-1) Remove outer album and leave label:
+https://github.com/OCR-D/ocrd_olena
 
- convert label.jpg -fuzz 50%% -fill white -opaque black -colorspace gray label_1.jpg
-
-2) Simple grayscale:
-
- convert label.jpg -colorspace label_2.jpg
-
-And, of course, the original image is tried as well :-)
+The original image is tried as well.
 
 Usage (see list of options):
     labelProc.py [-h] 
@@ -32,9 +27,17 @@ For example:
 import argparse, glob, os, sys
 from subprocess import call
 
-#set paths for convert (ImageMagick) and tesseract
-CONV_CMD = "/usr/bin/convert"
-TESS_CMD = "/usr/bin/tesseract"
+#set paths for scribo-cli and tesseract
+OCRD_CMD = "/usr/local/bin/scribo-cli"
+OPTS = ["sauvola_ms", "wolf", "singh"] #thanks to Merlijn Wajer for these suggestions
+TESS_CMD = "/usr/local/bin/tesseract"
+
+""" avoid applying multiple binarization steps """
+def isOpt(img,ext):
+    for o in OPTS:
+        if "_%s.%s" % (o,ext) in img:
+            return True
+    return False
 
 #parser arguments
 parser = argparse.ArgumentParser()
@@ -57,23 +60,16 @@ if args.folder == None or not os.path.exists(args.folder):
 for img in sorted(glob.glob(args.folder + "/*." + args.ext)):
     print("img", img)
     img_base = img.rsplit('.', 1)[0] 
-    cmd_base = "convert %s.%s" % (img_base,args.ext)
 
-    img_result = "%s_1.%s" % (img_base,args.ext)
-    if not os.path.exists(img_result):
-        cmd_line = cmd_base + " -fuzz 50% -fill white -opaque black -colorspace gray "
-        cmd_line += img_result
-        print("cmd_line:", cmd_line)
-        call(cmd_line, shell=True)
+    for opt in OPTS:
+        if not isOpt(img,args.ext):
+            img_result = "%s_%s.%s" % (img_base,opt,args.ext)
+            if not os.path.exists(img_result):
+                cmd_line = "%s %s %s %s" % (OCRD_CMD,opt,img,img_result)
+                print("cmd_line:", cmd_line)
+                call(cmd_line, shell=True)
 
-    img_result = "%s_2.%s" % (img_base,args.ext)
-    if not os.path.exists(img_result):
-        cmd_line = cmd_base + " -colorspace gray "
-        cmd_line += img_result
-        print("cmd_line:", cmd_line)
-        call(cmd_line, shell=True)
-
-    for fn in sorted(glob.glob(img_base + "*.*" + args.ext)):
+    for fn in sorted(glob.glob(img_base + "*." + args.ext)):
         fn_base = fn.split(".")[0]
         hocr_fn = fn_base + ".hocr"
         if not os.path.exists(hocr_fn):
