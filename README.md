@@ -25,6 +25,11 @@ test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_singh.hocr
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_wolf.hocr
 ```
+You can skip the OCR step and do this separately (using parallel for example) by using the _s_ switch:
+```
+python labelProc.py -f test100 -s
+```
+We use the HOCR option in Tesseract in order to get the probability numbers for OCR accuracy.
 The second python script combines the HOCR results into one document and creates a text verion:
 ```
 python mergeHocr.py -f test100
