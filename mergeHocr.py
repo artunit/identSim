@@ -23,7 +23,7 @@ from xml.dom import minidom
 from subprocess import call
 
 #set paths for cat and lynx
-CAT_CMD = "/usr/bin/cat"
+CAT_CMD = "/bin/cat"
 LYNX_CMD = "/usr/bin/lynx"
 
 #namespace for HOCR
@@ -356,9 +356,7 @@ def addSeq(file_cnt,block_id,num):
     return seq_id
 
 """ pull together paragraphs from hocr file """
-def sortOutHocr(HOCRfile,HOCRconf,file_cnt,munge,pars):
-
-    tree = ET.ElementTree(file=HOCRfile)
+def sortOutHocr(tree,HOCRfile,HOCRconf,file_cnt,munge,pars):
 
     #keep words together in paragraphs identified by tesseract
     for div_elem in tree.iterfind('.//{%s}%s' % (HOCR_NS,'div')):
@@ -419,7 +417,12 @@ def runThruHocr(ifile,iconf,file_cnt,munge,pars):
     #blanked out before - this is why logic brief here
 
     print("sort through hocr words for " + ifile + " ...",end="",flush=True)
-    pars = sortOutHocr(ifile,iconf,file_cnt,munge,pars)
+    try:
+        tree = ET.ElementTree(file=ifile)
+    except:
+        tree = None
+    if tree is not None:
+        pars = sortOutHocr(tree,ifile,iconf,file_cnt,munge,pars)
     print("!") #hocr processing is done
     #deal with rogues here?
 
@@ -431,7 +434,14 @@ def writeHocr(block,fhocr):
     hfile = open(fhocr, "w+b")
     hfile.write(bytearray(block))
     hfile.close()
-    
+
+""" avoid merging on anything but base """
+def first_pass(img_base,last_hfn):
+    if os.path.exists(img_base + ".hocr") and (last_hfn is None or last_hfn not in img_base):
+        if not os.path.exists(img_base + "_odw.hocr"):
+            return True
+    return False 
+
 #parser values
 parser = argparse.ArgumentParser()
 arg_named = parser.add_argument_group("named arguments")
@@ -454,12 +464,13 @@ if args.folder == None or not os.path.exists(args.folder):
     print("missing image folder, use '-h' parameter for syntax")
     sys.exit()
 
+last_hfn = None
 for hfn in sorted(glob.glob(args.folder + "/*." + args.ext)):
     #use filename to pull everything together
     img_base = hfn.rsplit('.', 1)[0]
 
-    if ("_1.%s" % args.ext) not in hfn and ("_2.%s" % args.ext) not in hfn and os.path.exists(img_base + ".hocr"):
-        print("img_base", img_base)
+    #check to see if anything needs merging
+    if first_pass(img_base,last_hfn):
 
         pars = []
         file_cnt = 0
@@ -488,3 +499,6 @@ for hfn in sorted(glob.glob(args.folder + "/*." + args.ext)):
         word_cnt = 1
 
         runThruPars(img_base,pars,orig_page,args.conf,args.lang)
+
+    if last_hfn is None or last_hfn not in img_base:
+        last_hfn = img_base
