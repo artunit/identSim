@@ -30,8 +30,8 @@ _find test100 -name '*.jpg' | parallel -j4 tesseract {} {.} hocr_) by using the 
 ```
 python labelProc.py -f test100 -s
 ```
-The script is for convenience, all of the above can be done with parallel. The HOCR option in Tesseract 
-is used in order to get the probability numbers for OCR accuracy.
+The script is for convenience, all of the above can be done with batch tools if desired. The HOCR 
+option in Tesseract is used in order to get the probability numbers for OCR accuracy.
 The second python script combines the HOCR results into one document based on the probability numbers and creates 
 a single combined text verion:
 ```
