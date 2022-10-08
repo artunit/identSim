@@ -6,7 +6,7 @@ I found it difficult to get workable OCR for many of the labels so I applied a f
 preprocessing steps and then merged the HOCR results. The code explains this in some detail, but as per the 
 blog post, the initial images were collected:
 ```
-ia search "collection:georgeblood" --itemlist | head -100 | parallel -j10 'ia download {} --no-directories --format="Item Image"'
+ia search "collection:georgeblood" --itemlist | head -100 | parallel -j4 'ia download {} --no-directories --format="Item Image"'
 ```
 In this case, the images were collected in a folder called _test100_. The first python script is used
 to apply the image preprocessing using the [OCRD Olena utility](https://github.com/OCR-D/ocrd_olena) and 
@@ -25,12 +25,15 @@ test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_singh.hocr
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_wolf.hocr
 ```
-You can skip the OCR step and do this separately (using parallel for example) by using the _s_ switch:
+You can skip the OCR step and do this separately (using parallel for example: 
+_find test100 -name '*.jpg' | parallel -j4 tesseract {} {.} hocr_) by using the _s_ switch:
 ```
 python labelProc.py -f test100 -s
 ```
-We use the HOCR option in Tesseract in order to get the probability numbers for OCR accuracy.
-The second python script combines the HOCR results into one document and creates a text verion:
+The script is for convenience, all of the above can be done with parallel. The HOCR option in Tesseract 
+is used in order to get the probability numbers for OCR accuracy.
+The second python script combines the HOCR results into one document based on the probability numbers and creates 
+a single combined text verion:
 ```
 python mergeHocr.py -f test100
 ```
@@ -39,8 +42,8 @@ The combined results are in two files with a "_odw" suffix:
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.hocr
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.txt
 ```
-The idea is that the resulting HOCR file is the best of the 4 passes of the OCR. I found this was the only way to get
-a usable level of OCR for similarity processing but there may be better ways of doing this. Finally, the last script
+The idea is that the resulting HOCR file is the best of the, in this case, 4 passes of the OCR. I found this was one way to get
+a usable level of OCR for similarity processing with my test set but there may be better ways of doing this. Finally, the last script
 uses the method [described here](https://dev.to/thepylot/compare-documents-similarity-using-python-nlp-4odp):
 ```
 python identSim.py -f test100 -d doc/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.txt
