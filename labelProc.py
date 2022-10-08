@@ -28,7 +28,8 @@ import argparse, glob, os, sys
 from subprocess import call
 
 #set paths for scribo-cli and tesseract
-OCRD_CMD = "/usr/local/bin/scribo-cli"
+#OCRD_CMD = "/usr/local/bin/scribo-cli"
+OCRD_CMD = "/home/masteruser/stuff/odw/labels/ocrd_olena/local/bin/scribo-cli"
 OPTS = ["sauvola_ms", "wolf", "singh"] #thanks to Merlijn Wajer for these suggestions
 TESS_CMD = "/usr/local/bin/tesseract"
 
@@ -49,7 +50,10 @@ arg_named.add_argument("-f","--folder",
     help="input folder")
 arg_named.add_argument('-l', '--lang', type=str, 
     default="eng",
-    help="language for OCR")
+    help="language for OCR"),
+arg_named.add_argument("-s","--skip", default=False, 
+    action="store_true",
+    help="skip OCR step (for using parallel for example)")
 
 args = parser.parse_args()
 
@@ -61,6 +65,7 @@ for img in sorted(glob.glob(args.folder + "/*." + args.ext)):
     print("img", img)
     img_base = img.rsplit('.', 1)[0] 
 
+    #image binarization options
     for opt in OPTS:
         if not isOpt(img,args.ext):
             img_result = "%s_%s.%s" % (img_base,opt,args.ext)
@@ -69,10 +74,12 @@ for img in sorted(glob.glob(args.folder + "/*." + args.ext)):
                 print("cmd_line:", cmd_line)
                 call(cmd_line, shell=True)
 
-    for fn in sorted(glob.glob(img_base + "*." + args.ext)):
-        fn_base = fn.split(".")[0]
-        hocr_fn = fn_base + ".hocr"
-        if not os.path.exists(hocr_fn):
-            cmd_line = "%s -l %s %s %s hocr" % (TESS_CMD,args.lang,fn,fn_base)
-            print("tesseract cmd:", cmd_line)
-            call(cmd_line, shell=True)
+    #OCR processing for image and variations (if not skipped)
+    if not args.skip:
+        for fn in sorted(glob.glob(img_base + "*." + args.ext)):
+            fn_base = fn.split(".")[0]
+            hocr_fn = fn_base + ".hocr"
+            if not os.path.exists(hocr_fn):
+                cmd_line = "%s -l %s %s %s hocr" % (TESS_CMD,args.lang,fn,fn_base)
+                print("tesseract cmd:", cmd_line)
+                call(cmd_line, shell=True)
