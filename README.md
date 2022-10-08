@@ -9,19 +9,21 @@ blog post, the initial images were collected:
 ia search "collection:georgeblood" --itemlist | head -100 | parallel -j10 'ia download {} --no-directories --format="Item Image"'
 ```
 In this case, the images were collected in a folder called _test100_. The first python script is used
-to apply the image preprocessing using [ImageMagick](https://imagemagick.org/) and 
+to apply the image preprocessing using the [OCRD Olena utility](https://github.com/OCR-D/ocrd_olena) and 
 the OCR with [Tesseract OCR](https://github.com/tesseract-ocr/tesseract):
 ```
 python labelProc.py -f test100
 ```
-There are 3 passes carried out for the OCR, and the results are captured in corresponding HOCR files:
+There are 4 passes carried out for the OCR by default, and the results are captured in corresponding HOCR files:
 ```
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage.jpg
-test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_1.jpg
-test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_2.jpg
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_sauvola_ms.jpg
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_singh.jpg
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_wolf.jpg
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage.hocr
-test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_1.hocr
-test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_2.hocr
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_sauvola_ms.hocr
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_singh.hocr
+test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_wolf.hocr
 ```
 The second python script combines the HOCR results into one document and creates a text verion:
 ```
@@ -32,7 +34,7 @@ The combined results are in two files with a "_odw" suffix:
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.hocr
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.txt
 ```
-The idea is that the resulting HOCR file is the best of the 3 passes of the OCR. I found this was the only way to get
+The idea is that the resulting HOCR file is the best of the 4 passes of the OCR. I found this was the only way to get
 a usable level of OCR for similarity processing but there may be better ways of doing this. Finally, the last script
 uses the method [described here](https://dev.to/thepylot/compare-documents-similarity-using-python-nlp-4odp):
 ```
@@ -40,16 +42,29 @@ python identSim.py -f test100 -d doc/78_1-a-handful-of-earth-from-my-dear-mother
 [nltk_data] Downloading package punkt to /home/ledsys/nltk_data...
 [nltk_data]   Package punkt is already up-to-date!
 collect sentence tokens...
-seperate into words...
+separate into words...
 build dictionary...
 now corpus...
-create Term Frequency - Inverse Document Frequency model...
+create TFID...
 create similarity index...
-now prep query_doc...
+prep query_doc...
+search for similarity...
 reverse sort scores...
-best match: test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-luth_gbia0333184b_itemimage_odw.txt
-score:  0.6166634
+show results...
+sim match: test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-luth_gbia0333184b_itemimage_odw.txt
+score:  1.0000001
+sim match: test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.txt
+score:  0.43742537
+sim match: test100/78_1-a-bushel-and-a-peck-2-my-time-of-day_vivian-blaine-and-the-hot-box-girls-rob_gbia0035785d_itemimage_odw.txt
+score:  0.1598242
+sim match: test100/78_1-a-basketful-of-nuts_gbia8000354d_itemimage_odw.txt
+score:  0.12936018
+sim match: test100/78_1-a-wise-bird_laura-littlefield-loomis-johnstone-hollis-dann_gbia0201218a_itemimage_odw.txt
+score:  0.11242671
 ```
-Notice that the document for matching is distinct from the folder holding the rest of the OCR files. I suspect
+Notice that the document for matching is distinct from the folder holding the OCR files. In this case,
+the document literally has a copy in the folder, hence the perfect (1.000) match. By default, the
+top 5 document matches are shown. The index and associated parts are built on the first invocation,
+but are saved and loaded from disk if run multiple times. I suspect
 there could be refinements in the text of the OCR to improve the matching, for example, removing 
 branding text, e.g. _Columbia_, but this is meant to be more of a starting point than a definitive example.
