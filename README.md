@@ -37,7 +37,7 @@ a single combined text verion:
 ```
 python mergeHocr.py -f test100
 ```
-The combined results are in two files with a "_odw" suffix:
+The combined results are in two files with a "_odw" suffix for each image in the folder (if the image has HOCR, sometimes no OCR is possible):
 ```
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.hocr
 test100/78_1-a-handful-of-earth-from-my-dear-mothers-grave-2-the-cruiskeen-lawn_frank-lu_gbia0412575b_itemimage_odw.txt
